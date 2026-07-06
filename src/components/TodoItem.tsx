@@ -11,7 +11,6 @@ const TodoItem = ({ todo, onToggle, onEdit, onDelete }: TodoItemProps) => {
     return (
         <li className="rounded-sm border border-gray-200 bg-white p-4 shadow-sm">
             <div className="flex items-start gap-3">
-                {/* Check box */}
                 <input
                     type="checkbox"
                     checked={todo.completed}

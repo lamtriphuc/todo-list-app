@@ -1,5 +1,7 @@
 export type TodoStatus = 'all' | 'active' | 'completed';
 
+export type TodoSort = 'newest' | 'oldest' | 'title-asc' | 'title-desc';
+
 export type Todo = {
     id: string;
     title: string;

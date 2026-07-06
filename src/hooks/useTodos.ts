@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import type { Todo, TodoFormData, TodoStatus } from "../types/todo";
+import type { Todo, TodoFormData, TodoSort, TodoStatus } from "../types/todo";
 import { getStorageItem, setStorageItem } from "../utils/storage";
 import { TODO_STORAGE_KEY } from "../utils/constants";
+import { isDuplicateTodoTitle, normalizeTodoTitle } from "../utils/validation";
 
 export function useTodos() {
     const [todos, setTodos] = useState<Todo[]>(() => {
@@ -10,6 +11,7 @@ export function useTodos() {
 
     const [searchText, setSearchText] = useState('');
     const [filterStatus, setFilterStatus] = useState<TodoStatus>('all');
+    const [sortBy, setSortBy] = useState<TodoSort>('newest');
 
     useEffect(() => {
         setStorageItem(TODO_STORAGE_KEY, todos);
@@ -19,7 +21,7 @@ export function useTodos() {
     const filteredTodos = useMemo(() => {
         const keyword = searchText.trim().toLowerCase();
 
-        return todos.filter((todo) => {
+        const result = todos.filter((todo) => {
             const matchesSearch =
                 todo.title.toLowerCase().includes(keyword) ||
                 todo.description?.toLowerCase().includes(keyword);
@@ -31,7 +33,31 @@ export function useTodos() {
 
             return matchesSearch && matchesStatus;
         });
-    }, [todos, searchText, filterStatus]);
+
+        return [...result].sort((a, b) => {
+            if (sortBy === 'newest') {
+                return (
+                    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                );
+            }
+
+            if (sortBy === 'oldest') {
+                return (
+                    new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                );
+            }
+
+            if (sortBy === 'title-asc') {
+                return a.title.localeCompare(b.title, 'vi');
+            }
+
+            if (sortBy === 'title-desc') {
+                return b.title.localeCompare(a.title, 'vi');
+            }
+
+            return 0;
+        });
+    }, [todos, searchText, filterStatus, sortBy]);
 
     // Lấy thống kê số lượng công việc: tất cả - hoàn thành - đang làm
     const todoStats = useMemo(() => {
@@ -47,7 +73,11 @@ export function useTodos() {
     }, [todos]);
 
     // Thêm công việc vào danh sách
-    function addTodo(data: TodoFormData) {
+    function addTodo(data: TodoFormData): string | null {
+        if (isDuplicateTodoTitle(data.title, todos)) {
+            return 'Tiêu đề công việc đã tồn tại.';
+        }
+
         const now = new Date().toISOString();
 
         const newTodo: Todo = {
@@ -60,10 +90,15 @@ export function useTodos() {
         };
 
         setTodos(prevTodos => [newTodo, ...prevTodos]);
+        return null;
     }
 
     // Sửa 1 công việc
-    function updateTodo(todoId: string, data: TodoFormData) {
+    function updateTodo(todoId: string, data: TodoFormData): string | null {
+        if (isDuplicateTodoTitle(data.title, todos, todoId)) {
+            return 'Tiêu đề công việc đã tồn tại.';
+        }
+
         setTodos(prevTodos =>
             prevTodos.map(todo => {
                 if (todo.id != todoId) {
@@ -78,6 +113,8 @@ export function useTodos() {
                 };
             })
         );
+
+        return null;
     }
 
     // Xóa 1 công việc
@@ -110,9 +147,11 @@ export function useTodos() {
         filteredTodos,
         searchText,
         filterStatus,
+        sortBy,
         todoStats,
         setSearchText,
         setFilterStatus,
+        setSortBy,
         addTodo,
         updateTodo,
         deleteTodo,

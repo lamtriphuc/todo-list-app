@@ -7,6 +7,7 @@ import TodoList from "../components/TodoList";
 import ConfirmModal from "../components/ConfirmModal";
 import EditTodoModal from "../components/EditTodoModal";
 import AddTodoModal from "../components/AddTodoModal";
+import TodoSort from "../components/TodoSort";
 
 const HomePage = () => {
     const {
@@ -14,8 +15,10 @@ const HomePage = () => {
         searchText,
         filterStatus,
         todoStats,
+        sortBy,
         setSearchText,
         setFilterStatus,
+        setSortBy,
         addTodo,
         updateTodo,
         deleteTodo,
@@ -61,13 +64,17 @@ const HomePage = () => {
                             <TodoSearch value={searchText} onChange={setSearchText} />
                         </div>
 
-                        <TodoFilter
-                            value={filterStatus}
-                            total={todoStats.total}
-                            active={todoStats.active}
-                            completed={todoStats.completed}
-                            onChange={setFilterStatus}
-                        />
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                            <TodoFilter
+                                value={filterStatus}
+                                total={todoStats.total}
+                                active={todoStats.active}
+                                completed={todoStats.completed}
+                                onChange={setFilterStatus}  
+                            />
+
+                            <TodoSort value={sortBy} onChange={setSortBy} />
+                        </div>
                     </div>
 
                     {todoStats.completed > 0 && (

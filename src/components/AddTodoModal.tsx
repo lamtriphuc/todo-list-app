@@ -6,7 +6,7 @@ import { TODO_DESCRIPTION_MAX_LENGTH, TODO_TITLE_MAX_LENGTH } from "../utils/con
 type AddTodoModalProps = {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (data: TodoFormData) => void;
+    onSubmit: (data: TodoFormData) => string | null;
 };
 
 const AddTodoModal = ({ isOpen, onClose, onSubmit }: AddTodoModalProps) => {
@@ -40,7 +40,12 @@ const AddTodoModal = ({ isOpen, onClose, onSubmit }: AddTodoModalProps) => {
             return;
         }
 
-        onSubmit(formData);
+        const submitError = onSubmit(formData);
+        if (submitError) {
+            setErrorMessage(submitError);
+            return;
+        }
+
         handleClose();
     }
 

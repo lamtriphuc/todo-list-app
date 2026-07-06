@@ -1,5 +1,25 @@
-import type { TodoFormData } from "../types/todo";
+import type { Todo, TodoFormData } from "../types/todo";
 import { TODO_DESCRIPTION_MAX_LENGTH, TODO_TITLE_MAX_LENGTH } from "./constants";
+
+export function normalizeTodoTitle(title: string): string {
+    return title.trim().toLowerCase();
+}
+
+export function isDuplicateTodoTitle(
+    title: string,
+    todos: Todo[],
+    ignoredTodoId?: string,
+): boolean {
+    const normalizedTitle = normalizeTodoTitle(title);
+
+    return todos.some(todo => {
+        if (todo.id === ignoredTodoId) {
+            return false;
+        }
+
+        return normalizeTodoTitle(todo.title) === normalizedTitle;
+    });
+}
 
 export function validateTodoForm(data: TodoFormData): string | null {
     const title = data.title.trim();
@@ -19,3 +39,4 @@ export function validateTodoForm(data: TodoFormData): string | null {
 
     return null;
 }
+

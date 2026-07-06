@@ -32,7 +32,7 @@ const TodoFilter = ({ value, total, active, completed, onChange, }: TodoFilterPr
         ];
 
     return (
-        <div className="flex w-full gap-2 overflow-x-auto md:w-auto md:overflow-visible">
+        <div className="flex w-full gap-1 overflow-x-auto md:w-auto md:overflow-visible">
             {filters.map((filter) => {
                 const isActive = filter.value === value;
 
@@ -41,7 +41,7 @@ const TodoFilter = ({ value, total, active, completed, onChange, }: TodoFilterPr
                         key={filter.value}
                         type="button"
                         onClick={() => onChange(filter.value)}
-                        className={`shrink-0 rounded-full px-3 py-2 text-sm font-medium transition ${isActive
+                        className={`shrink-0 rounded-full px-2 py-2 text-sm font-medium transition ${isActive
                             ? 'bg-blue-600 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}

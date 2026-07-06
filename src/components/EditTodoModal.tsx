@@ -7,7 +7,7 @@ type EditTodoModalProps = {
     todo: Todo | null;
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (todoId: string, data: TodoFormData) => void;
+    onSubmit: (todoId: string, data: TodoFormData) => string | null;
 };
 
 const EditTodoModal = ({ todo, isOpen, onClose, onSubmit }: EditTodoModalProps) => {
@@ -46,7 +46,12 @@ const EditTodoModal = ({ todo, isOpen, onClose, onSubmit }: EditTodoModalProps) 
             return;
         }
 
-        onSubmit(todo.id, formData);
+        const submitError = onSubmit(todo.id, formData);
+        if (submitError) {
+            setErrorMessage(submitError);
+            return;
+        }
+
         onClose();
     }
 

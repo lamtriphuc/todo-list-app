@@ -108,20 +108,26 @@ docker compose down
 ```
 
 ### Cách 3: Kéo image có sẵn từ Docker Hub
-
+ 
 Không cần clone code hay cài Node.js — chỉ cần pull và chạy:
-
+ 
 ```bash
 docker pull lamtriphuc2004/todo-app:v1
 docker run -d -p 3000:80 --rm --name todo-app lamtriphuc2004/todo-app:v1
 ```
-
+ 
 Truy cập ứng dụng tại:
-
+ 
 ```
 http://localhost:3000
 ```
-
+ 
+Dừng container (do dùng `--rm`, container sẽ tự động bị xóa sau khi dừng):
+ 
+```bash
+docker stop todo-app
+```
+ 
 ---
 
 ## Các trường hợp dữ liệu không hợp lệ đã xử lý

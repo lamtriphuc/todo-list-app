@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: todo-app:latest
+    image: todo-app:v1
     container_name: todo-app
     restart: unless-stopped
     ports:

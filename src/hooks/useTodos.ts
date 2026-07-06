@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Todo, TodoFormData, TodoSort, TodoStatus } from "../types/todo";
 import { getStorageItem, setStorageItem } from "../utils/storage";
-import { TODO_STORAGE_KEY } from "../utils/constants";
-import { isDuplicateTodoTitle, normalizeTodoTitle } from "../utils/validation";
+import { TODO_CURRENT_PAGE_STORAGE_KEY, TODO_PAGE_SIZE, TODO_STORAGE_KEY } from "../utils/constants";
+import { isDuplicateTodoTitle } from "../utils/validation";
 
 export function useTodos() {
     const [todos, setTodos] = useState<Todo[]>(() => {
@@ -13,25 +13,66 @@ export function useTodos() {
     const [filterStatus, setFilterStatus] = useState<TodoStatus>('all');
     const [sortBy, setSortBy] = useState<TodoSort>('newest');
 
+    const [currentPage, setCurrentPage] = useState(getInitialCurrentPage);
+
+    const isFirstRender = useRef(true);
+
     useEffect(() => {
         setStorageItem(TODO_STORAGE_KEY, todos);
     }, [todos]);
 
-    // Lọc theo keyword và trạng thái
-    const filteredTodos = useMemo(() => {
+    useEffect(() => {
+        setStorageItem(TODO_CURRENT_PAGE_STORAGE_KEY, currentPage);
+    }, [currentPage]);
+
+    // Bỏ qua lần render đầu để khi F5 vẫn giữ được trang hiện tại từ localStorage.
+    // Sau đó, mỗi khi search/filter/sort thay đổi thì quay về trang 1.
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+
+        setCurrentPage(1);
+    }, [searchText, filterStatus, sortBy]);
+
+    // Tách riêng bước search để số lượng trên filter tabs phản ánh đúng kết quả tìm kiếm.
+    const searchedTodos = useMemo(() => {
         const keyword = searchText.trim().toLowerCase();
 
-        const result = todos.filter((todo) => {
-            const matchesSearch =
-                todo.title.toLowerCase().includes(keyword) ||
-                todo.description?.toLowerCase().includes(keyword);
+        if (!keyword) {
+            return todos;
+        }
 
-            const matchesStatus =
+        return todos.filter(todo => {
+            return (
+                todo.title.toLowerCase().includes(keyword) ||
+                todo.description?.toLowerCase().includes(keyword)
+            );
+        });
+    }, [todos, searchText]);
+
+    // Thống kê dựa trên danh sách sau khi search, nhưng trước khi lọc trạng thái.
+    const todoStats = useMemo(() => {
+        const total = searchedTodos.length;
+        const completed = searchedTodos.filter(todo => todo.completed).length;
+        const active = total - completed;
+
+        return {
+            total,
+            completed,
+            active,
+        };
+    }, [searchedTodos]);
+
+    // Sau khi search, tiếp tục lọc theo trạng thái rồi sắp xếp danh sách.
+    const filteredTodos = useMemo(() => {
+        const result = searchedTodos.filter(todo => {
+            return (
                 filterStatus === 'all' ||
                 (filterStatus === 'active' && !todo.completed) ||
-                (filterStatus === 'completed' && todo.completed);
-
-            return matchesSearch && matchesStatus;
+                (filterStatus === 'completed' && todo.completed)
+            );
         });
 
         return [...result].sort((a, b) => {
@@ -57,22 +98,35 @@ export function useTodos() {
 
             return 0;
         });
-    }, [todos, searchText, filterStatus, sortBy]);
+    }, [searchedTodos, filterStatus, sortBy]);
 
-    // Lấy thống kê số lượng công việc: tất cả - hoàn thành - đang làm
-    const todoStats = useMemo(() => {
-        const total = todos.length;
-        const completed = todos.filter((todo) => todo.completed).length;
-        const active = total - completed;
+    const totalPages = Math.max(1, Math.ceil(filteredTodos.length / TODO_PAGE_SIZE));
 
-        return {
-            total,
-            completed,
-            active,
-        };
-    }, [todos]);
+    // Chỉ lấy các công việc thuộc trang hiện tại để hiển thị.
+    const paginatedTodos = useMemo(() => {
+        const startIndex = (currentPage - 1) * TODO_PAGE_SIZE;
+        const endIndex = startIndex + TODO_PAGE_SIZE;
 
-    // Thêm công việc vào danh sách
+        return filteredTodos.slice(startIndex, endIndex);
+    }, [filteredTodos, currentPage]);
+
+    // Khi xóa/lọc làm giảm số trang, đưa currentPage về trang hợp lệ gần nhất.
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [currentPage, totalPages]);
+
+    function getInitialCurrentPage() {
+        const savedPage = getStorageItem<number>(TODO_CURRENT_PAGE_STORAGE_KEY, 1);
+
+        if (!Number.isInteger(savedPage) || savedPage < 1) {
+            return 1;
+        }
+
+        return savedPage;
+    }
+
     function addTodo(data: TodoFormData): string | null {
         if (isDuplicateTodoTitle(data.title, todos)) {
             return 'Tiêu đề công việc đã tồn tại.';
@@ -93,7 +147,6 @@ export function useTodos() {
         return null;
     }
 
-    // Sửa 1 công việc
     function updateTodo(todoId: string, data: TodoFormData): string | null {
         if (isDuplicateTodoTitle(data.title, todos, todoId)) {
             return 'Tiêu đề công việc đã tồn tại.';
@@ -101,14 +154,14 @@ export function useTodos() {
 
         setTodos(prevTodos =>
             prevTodos.map(todo => {
-                if (todo.id != todoId) {
+                if (todo.id !== todoId) {
                     return todo;
                 }
 
                 return {
                     ...todo,
                     title: data.title.trim(),
-                    description: data.description?.trim(),
+                    description: data.description?.trim() || '',
                     updatedAt: new Date().toISOString()
                 };
             })
@@ -117,7 +170,6 @@ export function useTodos() {
         return null;
     }
 
-    // Xóa 1 công việc
     function deleteTodo(todoId: string) {
         setTodos(prevTodos => prevTodos.filter(todo => todo.id !== todoId));
     }
@@ -149,6 +201,11 @@ export function useTodos() {
         filterStatus,
         sortBy,
         todoStats,
+        paginatedTodos,
+        currentPage,
+        totalPages,
+        pageSize: TODO_PAGE_SIZE,
+        setCurrentPage,
         setSearchText,
         setFilterStatus,
         setSortBy,

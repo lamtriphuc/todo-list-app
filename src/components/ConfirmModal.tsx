@@ -25,7 +25,7 @@ const ConfirmModal = ({
             <div className="w-full max-w-sm rounded-sm bg-white p-5 shadow-lg">
                 <h2 className="text-lg font-bold text-gray-900">{title}</h2>
 
-                <p className="mt-2 text-sm text-gray-600">{message}</p>
+                <p className="mt-2 wrap-break-word text-sm leading-6 text-gray-600">{message}</p>
 
                 <div className="mt-5 flex justify-end gap-2">
                     <button

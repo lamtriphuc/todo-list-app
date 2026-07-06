@@ -1,10 +1,12 @@
 import type { Todo, TodoFormData } from "../types/todo";
 import { TODO_DESCRIPTION_MAX_LENGTH, TODO_TITLE_MAX_LENGTH } from "./constants";
 
+// Chuẩn hóa title để so sánh không phân biệt hoa/thường và khoảng trắng đầu/cuối.
 export function normalizeTodoTitle(title: string): string {
     return title.trim().toLowerCase();
 }
 
+// ignoredTodoId dùng khi chỉnh sửa để không tự so sánh với chính todo hiện tại.
 export function isDuplicateTodoTitle(
     title: string,
     todos: Todo[],

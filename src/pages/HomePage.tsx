@@ -8,6 +8,7 @@ import ConfirmModal from "../components/ConfirmModal";
 import EditTodoModal from "../components/EditTodoModal";
 import AddTodoModal from "../components/AddTodoModal";
 import TodoSort from "../components/TodoSort";
+import TodoPagination from "../components/TodoPagination";
 
 const HomePage = () => {
     const {
@@ -16,6 +17,10 @@ const HomePage = () => {
         filterStatus,
         todoStats,
         sortBy,
+        paginatedTodos,
+        currentPage,
+        totalPages,
+        setCurrentPage,
         setSearchText,
         setFilterStatus,
         setSortBy,
@@ -40,8 +45,8 @@ const HomePage = () => {
     }
 
     return (
-        <main className="min-h-screen bg-gray-100 px-4 py-6 md:py-8">
-            <div className="mx-auto max-w-3xl space-y-5">
+        <main className="min-h-screen bg-gray-100 px-4 md:py-4">
+            <div className="mx-auto max-w-3xl space-y-4">
                 <header className="flex flex-col gap-4 rounded-sm bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">
@@ -70,7 +75,7 @@ const HomePage = () => {
                                 total={todoStats.total}
                                 active={todoStats.active}
                                 completed={todoStats.completed}
-                                onChange={setFilterStatus}  
+                                onChange={setFilterStatus}
                             />
 
                             <TodoSort value={sortBy} onChange={setSortBy} />
@@ -91,10 +96,17 @@ const HomePage = () => {
                 </section>
 
                 <TodoList
-                    todos={filteredTodos}
+                    todos={paginatedTodos}
                     onToggle={toggleTodo}
                     onEdit={setEditingTodo}
                     onDelete={setDeletingTodo}
+                />
+
+                <TodoPagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={filteredTodos.length}
+                    onPageChange={setCurrentPage}
                 />
 
             </div>
@@ -115,8 +127,7 @@ const HomePage = () => {
             <ConfirmModal
                 isOpen={Boolean(deletingTodo)}
                 title="Xóa công việc?"
-                message={`Bạn có chắc muốn xóa "${deletingTodo?.title || 'công việc này'
-                    }"? Hành động này không thể hoàn tác.`}
+                message="Bạn có chắc muốn xóa công việc này? Hành động này không thể hoàn tác."
                 confirmText="Xóa"
                 cancelText="Hủy"
                 onConfirm={handleConfirmDelete}

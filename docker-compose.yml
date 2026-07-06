@@ -1,0 +1,10 @@
+services:
+  todo-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: todo-app:latest
+    container_name: todo-app
+    restart: unless-stopped
+    ports:
+      - "3000:80"

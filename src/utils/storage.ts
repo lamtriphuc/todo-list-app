@@ -7,7 +7,8 @@ export function getStorageItem<T>(key: string, fallbackValue: T): T {
         }
 
         return JSON.parse(item);
-    } catch (error) {
+    } catch {
+        // Trả về fallback nếu dữ liệu trong localStorage bị lỗi hoặc không parse được.
         return fallbackValue;
     }
 }

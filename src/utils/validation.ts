@@ -1,23 +1,21 @@
 import type { TodoFormData } from "../types/todo";
+import { TODO_DESCRIPTION_MAX_LENGTH, TODO_TITLE_MAX_LENGTH } from "./constants";
 
 export function validateTodoForm(data: TodoFormData): string | null {
     const title = data.title.trim();
+    const description = data.description?.trim() || '';
 
     if (!title) {
-        return 'Tên công việc không được để trống.';
+        return 'Vui lòng nhập tiêu đề công việc.';
     }
 
-    if (title.length < 2) {
-        return 'Tên công việc phải có ít nhất 2 ký tự.';
+    if (title.length > TODO_TITLE_MAX_LENGTH) {
+        return `Tiêu đề công việc không được vượt quá ${TODO_TITLE_MAX_LENGTH} ký tự.`;
     }
 
-    if (title.length > 100) {
-        return 'Tên công việc không được vượt quá 100 ký tự.';
+    if (description.length > TODO_DESCRIPTION_MAX_LENGTH) {
+        return `Mô tả không được vượt quá ${TODO_DESCRIPTION_MAX_LENGTH} ký tự.`;
     }
 
-    if (data.description && data.description.length > 300) {
-        return 'Mô tả không được vượt quá 300 ký tự.';
-    }
-
-    return null
+    return null;
 }

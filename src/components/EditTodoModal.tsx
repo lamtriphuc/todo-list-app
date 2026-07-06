@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Todo, TodoFormData } from "../types/todo";
 import { validateTodoForm } from "../utils/validation";
+import { TODO_DESCRIPTION_MAX_LENGTH, TODO_TITLE_MAX_LENGTH } from "../utils/constants";
 
 type EditTodoModalProps = {
     todo: Todo | null;
@@ -62,8 +63,15 @@ const EditTodoModal = ({ todo, isOpen, onClose, onSubmit }: EditTodoModalProps) 
                         <input
                             value={title}
                             onChange={event => setTitle(event.target.value)}
+                            maxLength={TODO_TITLE_MAX_LENGTH}
                             className="w-full rounded-sm border border-gray-300 px-3 py-2 outline-none focus:none"
                         />
+                        <div className="mt-1 flex justify-between text-xs text-gray-400">
+                            <span>Bắt buộc</span>
+                            <span>
+                                {title.length}/{TODO_TITLE_MAX_LENGTH}
+                            </span>
+                        </div>
                     </div>
 
                     <div className="my-4">
@@ -75,8 +83,14 @@ const EditTodoModal = ({ todo, isOpen, onClose, onSubmit }: EditTodoModalProps) 
                             value={description}
                             onChange={(event) => setDescription(event.target.value)}
                             rows={3}
+                            maxLength={TODO_DESCRIPTION_MAX_LENGTH}
                             className="w-full resize-none rounded-sm border border-gray-300 px-3 py-2 outline-none focus:none"
                         />
+                        <div className="mt-1 flex justify-end text-xs text-gray-400">
+                            <span>
+                                {description.length}/{TODO_DESCRIPTION_MAX_LENGTH}
+                            </span>
+                        </div>
                     </div>
 
                     {errorMessage && (

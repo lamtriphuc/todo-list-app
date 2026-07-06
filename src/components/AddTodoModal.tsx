@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { TodoFormData } from "../types/todo";
 import { validateTodoForm } from "../utils/validation";
+import { TODO_DESCRIPTION_MAX_LENGTH, TODO_TITLE_MAX_LENGTH } from "../utils/constants";
 
 type AddTodoModalProps = {
     isOpen: boolean;
@@ -51,9 +52,6 @@ const AddTodoModal = ({ isOpen, onClose, onSubmit }: AddTodoModalProps) => {
                         <h2 className="text-lg font-bold text-gray-900">
                             Thêm công việc
                         </h2>
-                        <p className="mt-1 text-sm text-gray-500">
-                            Tạo công việc mới để theo dõi tiến độ.
-                        </p>
                     </div>
 
                     <button
@@ -75,8 +73,15 @@ const AddTodoModal = ({ isOpen, onClose, onSubmit }: AddTodoModalProps) => {
                             value={title}
                             onChange={(event) => setTitle(event.target.value)}
                             placeholder="Ví dụ: Hoàn thành bài test intern"
+                            maxLength={TODO_TITLE_MAX_LENGTH}
                             className="w-full rounded-sm border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
                         />
+                        <div className="mt-1 flex justify-between text-xs text-gray-400">
+                            <span>Bắt buộc</span>
+                            <span>
+                                {title.length}/{TODO_TITLE_MAX_LENGTH}
+                            </span>
+                        </div>
                     </div>
 
                     <div>
@@ -89,8 +94,14 @@ const AddTodoModal = ({ isOpen, onClose, onSubmit }: AddTodoModalProps) => {
                             onChange={(event) => setDescription(event.target.value)}
                             placeholder="Ghi chú thêm nếu cần..."
                             rows={3}
+                            maxLength={TODO_DESCRIPTION_MAX_LENGTH}
                             className="w-full resize-none rounded-sm border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
                         />
+                        <div className="mt-1 flex justify-end text-xs text-gray-400">
+                            <span>
+                                {description.length}/{TODO_DESCRIPTION_MAX_LENGTH}
+                            </span>
+                        </div>
                     </div>
 
                     {errorMessage && (
